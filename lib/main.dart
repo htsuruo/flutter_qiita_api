@@ -48,18 +48,21 @@ class HomePage extends StatelessWidget {
   }
 
   Future<void> _onFlutterWebAuth() async {
-    const clientId = '658d6eb1968088cfdb3015a2616100faa65522b1';
-    const callbackUrl = 'qiita-api-sample://callback';
+    const clientId = 'xxxxx';
+    const clientSecret = 'xxxxx';
+    const callbackUrlScheme = 'qiita-api-sample';
+    const callbackUrl = '$callbackUrlScheme://callback';
     final state = DateTime.now().millisecondsSinceEpoch.toString();
     final authorizedUrl = _getAuthorizedUrl(
       clientId: clientId,
       callbackUrl: callbackUrl,
       state: state,
     );
-    const callbackUrlScheme = 'qiita-api-sample';
 
     final result = await FlutterWebAuth.authenticate(
-        url: authorizedUrl, callbackUrlScheme: callbackUrlScheme);
+      url: authorizedUrl,
+      callbackUrlScheme: callbackUrlScheme,
+    );
     final parsedUrl = Uri.parse(result);
     final resState = parsedUrl.queryParameters['state'];
     if (state != resState) {
@@ -70,7 +73,7 @@ class HomePage extends StatelessWidget {
       'https://qiita.com/api/v2/access_tokens',
       body: {
         'client_id': clientId,
-        'client_secret': '3be5578d77b7cccbe90a2342511684bfcc541ca0',
+        'client_secret': clientSecret,
         'code': code,
       },
     );
@@ -78,7 +81,7 @@ class HomePage extends StatelessWidget {
   }
 
   Future<void> _onCreateWebView(BuildContext context) async {
-    const clientId = '658d6eb1968088cfdb3015a2616100faa65522b1';
+    const clientId = 'xxxxx';
     const callbackUrl = 'qiita-api-sample://callback';
     final state = DateTime.now().millisecondsSinceEpoch.toString();
     final authorizedUrl = _getAuthorizedUrl(
