@@ -31,6 +31,7 @@ dependencies:
   url_launcher:
   webview_flutter:
   flutter_web_auth:
+  http:
 
 dev_dependencies:
   flutter_test:
