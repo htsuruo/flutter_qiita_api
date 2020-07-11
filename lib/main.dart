@@ -64,6 +64,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// flutter_web_authを利用（内部でPlatform Channelsを利用）
+  /// iOS:ASWebAuthenticationSession（アプリ内Safariのようなもの）を間接的に利用
+  /// Android: Chrome Custom Tabsを間接的に利用（一度別ブラウザに飛ぶような遷移になる）
+  /// セッションが確立されると（?）callbackUrlSchemeに指定したアプリに戻ってくる
   Future<void> _onFlutterWebAuth() async {
     final client = QiitaClient(
       clientId: 'xxxxxxxxxxxxxxxxxxxx',
@@ -83,6 +87,10 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  /// webview_flutterを利用
+  /// ディープリンクで戻ってくるのではなく、NaivigatorDelegateで毎回URLの変更を検知する
+  /// コールバックURLに変化したらNavigator.popなどで画面を閉じる
+  /// コールバックURLを文字列で判別するので実在しなくても問題なさそうな雰囲気
   Future<void> _onCreateWebView(BuildContext context) async {
     final client = QiitaClient(
       clientId: 'xxxxxxxxxxxxxxxxxxxx',
