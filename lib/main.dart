@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_qiita_api/qiita_client.dart';
+import 'package:flutter_qiita_api/qiita_user.dart';
 import 'package:flutter_qiita_api/qiita_web_view.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Qiita API Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: const Color(0xFF55c500),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const HomePage(),
@@ -22,8 +22,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  QiitaUser loggedInUser;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,13 +42,22 @@ class HomePage extends StatelessWidget {
         child: Column(
           children: [
             FlatButton(
-              child: const Text('webViewで認証'),
-              onPressed: () async => _onCreateWebView(context),
-            ),
-            FlatButton(
               child: const Text('flutter_web_authで認証'),
               onPressed: () async => _onFlutterWebAuth(),
             ),
+            FlatButton(
+              child: const Text('webViewで認証'),
+              onPressed: () async => _onCreateWebView(context),
+            ),
+            const Divider(),
+            loggedInUser != null
+                ? ListTile(
+                    title: Text('${loggedInUser.id} でログイン中'),
+                    subtitle: loggedInUser.description != null
+                        ? Text(loggedInUser.description)
+                        : null,
+                  )
+                : Container(),
           ],
         ),
       ),
@@ -48,67 +65,40 @@ class HomePage extends StatelessWidget {
   }
 
   Future<void> _onFlutterWebAuth() async {
-    const clientId = 'xxxxx';
-    const clientSecret = 'xxxxx';
-    const callbackUrlScheme = 'qiita-api-sample';
-    const callbackUrl = '$callbackUrlScheme://callback';
-    final state = DateTime.now().millisecondsSinceEpoch.toString();
-    final authorizedUrl = _getAuthorizedUrl(
-      clientId: clientId,
-      callbackUrl: callbackUrl,
-      state: state,
+    final client = QiitaClient(
+      clientId: 'xxxxxxxxxxxxxxxxxxxx',
+      clientSecret: 'xxxxxxxxxxxxxxxxxxxx',
+      callbackUrlScheme: 'xxxxx', //qiita-api-sample
+      callbackUrl: 'xxxx', //qiita-api-sample://callback
     );
 
-    final result = await FlutterWebAuth.authenticate(
-      url: authorizedUrl,
-      callbackUrlScheme: callbackUrlScheme,
-    );
-    final parsedUrl = Uri.parse(result);
-    final resState = parsedUrl.queryParameters['state'];
-    if (state != resState) {
+    final code = await client.getAuthorizeCode();
+    if (code == null) {
       return;
     }
-    final code = parsedUrl.queryParameters['code'];
-    final response = await http.post(
-      'https://qiita.com/api/v2/access_tokens',
-      body: {
-        'client_id': clientId,
-        'client_secret': clientSecret,
-        'code': code,
-      },
-    );
-    print(response.statusCode);
+    final accessToken = await client.getAccessToken(code: code);
+    final user = await client.getAuthUser(accessToken: accessToken);
+    setState(() {
+      loggedInUser = user;
+    });
   }
 
   Future<void> _onCreateWebView(BuildContext context) async {
-    const clientId = 'xxxxx';
-    const callbackUrl = 'qiita-api-sample://callback';
-    final state = DateTime.now().millisecondsSinceEpoch.toString();
-    final authorizedUrl = _getAuthorizedUrl(
-      clientId: clientId,
-      callbackUrl: callbackUrl,
-      state: state,
+    final client = QiitaClient(
+      clientId: 'xxxxxxxxxxxxxxxxxxxx',
+      clientSecret: 'xxxxxxxxxxxxxxxxxxxx',
+      callbackUrlScheme: 'xxxxx', //qiita-api-sample
+      callbackUrl: 'xxxx', //qiita-api-sample://callback
     );
-
     final responseUrl = await Navigator.of(context).push(
       MaterialPageRoute<PageRoute>(
         builder: (context) => QiitaWebView(
-          url: authorizedUrl,
-          callbackURl: callbackUrl,
+          url: client.authorizedUrl,
+          callbackURl: client.callbackUrl,
         ),
+        fullscreenDialog: true,
       ),
     );
     print(responseUrl);
-  }
-
-  String _getAuthorizedUrl(
-      {String clientId, String callbackUrl, String state}) {
-    final url = Uri.https('qiita.com', '/api/v2/oauth/authorize', {
-      'client_id': clientId,
-      'redirect_uri': callbackUrl,
-      'scope': 'read_qiita write_qiita',
-      'state': state,
-    });
-    return url.toString();
   }
 }
