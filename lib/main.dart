@@ -30,7 +30,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  QiitaUser loggedInUser;
+  QiitaUser user;
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +50,11 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async => _onCreateWebView(context),
             ),
             const Divider(),
-            loggedInUser != null
+            user != null
                 ? ListTile(
-                    title: Text('${loggedInUser.id} を取得'),
-                    subtitle: loggedInUser.description != null
-                        ? Text(loggedInUser.description)
+                    title: Text('${user.id} を取得'),
+                    subtitle: user.description != null
+                        ? Text(user.description)
                         : null,
                   )
                 : Container(),
@@ -80,9 +80,9 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     final accessToken = await client.getAccessToken(code: code);
-    final user = await client.getAuthUser(accessToken: accessToken);
+    final _user = await client.getAuthUser(accessToken: accessToken);
     setState(() {
-      loggedInUser = user;
+      user = _user;
     });
   }
 
