@@ -11,7 +11,7 @@ class QiitaClient {
     @required this.clientId,
     @required this.clientSecret,
     @required this.callbackUrlScheme,
-    @required this.callbackUrl,
+    this.callbackUrl,
     this.scope = 'read_qiita write_qiita',
   });
 

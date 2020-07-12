@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
             const Divider(),
             loggedInUser != null
                 ? ListTile(
-                    title: Text('${loggedInUser.id} でログイン中'),
+                    title: Text('${loggedInUser.id} を取得'),
                     subtitle: loggedInUser.description != null
                         ? Text(loggedInUser.description)
                         : null,
@@ -67,13 +67,12 @@ class _HomePageState extends State<HomePage> {
   /// flutter_web_authを利用（内部でPlatform Channelsを利用）
   /// iOS:ASWebAuthenticationSession（アプリ内Safariのようなもの）を間接的に利用
   /// Android: Chrome Custom Tabsを間接的に利用（一度別ブラウザに飛ぶような遷移になる）
-  /// セッションが確立されると（?）callbackUrlSchemeに指定したアプリに戻ってくる
+  /// callbackUrlSchemeと一致すると該当のアプリに戻ってくる
   Future<void> _onFlutterWebAuth() async {
     final client = QiitaClient(
       clientId: 'xxxxxxxxxxxxxxxxxxxx',
       clientSecret: 'xxxxxxxxxxxxxxxxxxxx',
       callbackUrlScheme: 'xxxxx', //qiita-api-sample
-      callbackUrl: 'xxxx', //qiita-api-sample://callback
     );
 
     final code = await client.getAuthorizeCode();
