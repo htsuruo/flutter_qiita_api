@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qiita_api/qiita_user.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
@@ -10,7 +12,7 @@ class QiitaClient {
   QiitaClient({
     @required this.clientId,
     @required this.clientSecret,
-    @required this.callbackUrlScheme,
+    this.callbackUrlScheme,
     this.callbackUrl,
     this.scope = 'read_qiita write_qiita',
   });
@@ -94,6 +96,15 @@ class QiitaClient {
     }
     final json = jsonDecode(authUser.body) as Map<String, dynamic>;
     return QiitaUser.fromJson(json);
+  }
+
+  String validateCode({@required String urlString}) {
+    final parsedUrl = Uri.parse(urlString);
+    final resState = parsedUrl.queryParameters['state'];
+    if (_reqState != resState) {
+      return null;
+    }
+    return parsedUrl.queryParameters['code'];
   }
 }
 

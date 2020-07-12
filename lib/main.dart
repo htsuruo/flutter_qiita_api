@@ -42,11 +42,11 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             FlatButton(
-              child: const Text('flutter_web_authで認証'),
+              child: const Text('flutter_web_authで認可'),
               onPressed: () async => _onFlutterWebAuth(),
             ),
             FlatButton(
-              child: const Text('webViewで認証'),
+              child: const Text('webViewで認可'),
               onPressed: () async => _onCreateWebView(context),
             ),
             const Divider(),
@@ -94,11 +94,10 @@ class _HomePageState extends State<HomePage> {
     final client = QiitaClient(
       clientId: 'xxxxxxxxxxxxxxxxxxxx',
       clientSecret: 'xxxxxxxxxxxxxxxxxxxx',
-      callbackUrlScheme: 'xxxxx', //qiita-api-sample
-      callbackUrl: 'xxxx', //qiita-api-sample://callback
+      callbackUrl: 'xxxxx', //qiita-api-sample://callback
     );
-    final responseUrl = await Navigator.of(context).push(
-      MaterialPageRoute<PageRoute>(
+    final responseUrl = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
         builder: (context) => QiitaWebView(
           url: client.authorizedUrl,
           callbackURl: client.callbackUrl,
@@ -106,6 +105,14 @@ class _HomePageState extends State<HomePage> {
         fullscreenDialog: true,
       ),
     );
-    print(responseUrl);
+    final code = client.validateCode(urlString: responseUrl);
+    if (code == null) {
+      return;
+    }
+    final accessToken = await client.getAccessToken(code: code);
+    final _user = await client.getAuthUser(accessToken: accessToken);
+    setState(() {
+      user = _user;
+    });
   }
 }
